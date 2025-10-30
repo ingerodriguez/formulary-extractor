@@ -1,7 +1,7 @@
 {
   "name": "formulary-extractor",
   "version": "1.0.0",
-  "description": "Microservice to extract searchable text from formulary PDFs",
+  "description": "Lightweight PDF text extractor for formulary scanning",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -10,9 +10,6 @@
   "dependencies": {
     "express": "^4.18.2",
     "pdf-parse": "^1.1.1",
-    "undici": "^6.19.6"
-  },
-  "engines": {
-    "node": ">=20"
+    "node-fetch": "^3.3.2"
   }
 }
