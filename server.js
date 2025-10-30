@@ -5,12 +5,12 @@ import pdf from "pdf-parse";
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 
-// Root route - health check
+// Health check
 app.get("/", (req, res) => {
-  res.json({ status: "ok", message: "Formulary extractor running" });
+  res.json({ status: "ok", message: "Formulary extractor service running" });
 });
 
-// Main endpoint: extract text from PDF URL
+// Main extractor route
 app.get("/extract", async (req, res) => {
   try {
     const { url } = req.query;
@@ -18,31 +18,28 @@ app.get("/extract", async (req, res) => {
       return res.status(400).json({ error: "Missing ?url= parameter" });
     }
 
-    console.log("Downloading PDF from:", url);
+    console.log("Fetching PDF:", url);
     const response = await fetch(url);
     if (!response.ok) {
-      return res.status(400).json({ error: `Failed to fetch PDF: ${response.statusText}` });
+      return res.status(400).json({ error: `Failed to fetch PDF (${response.status})` });
     }
 
     const buffer = await response.arrayBuffer();
     const data = await pdf(Buffer.from(buffer));
     const text = data.text || "";
 
-    // Basic info
-    const contains = [];
-    ["apixaban", "eliquis", "metformin", "atorvastatin"].forEach((kw) => {
-      if (text.toLowerCase().includes(kw.toLowerCase())) contains.push(kw);
-    });
+    const keywords = ["apixaban", "eliquis", "metformin", "atorvastatin"];
+    const found = keywords.filter(k => text.toLowerCase().includes(k.toLowerCase()));
 
     res.json({
       status: "ok",
       url,
       text_length: text.length,
-      contains,
-      sample: text.slice(0, 800),
+      found,
+      snippet: text.slice(0, 800)
     });
   } catch (err) {
-    console.error("Error extracting PDF:", err);
+    console.error("Error extracting:", err);
     res.status(500).json({ error: err.message });
   }
 });
